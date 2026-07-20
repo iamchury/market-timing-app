@@ -51,8 +51,8 @@ for ticker in cfg['detail_order']:
             fig.add_vline(
                 x=event_date,
                 line_color=event_colors.get(signal, '#757575'),
-                line_width=1,
-                line_dash='dash',
+                line_width=4 if signal in {'BUY', 'SELL'} else 1,
+                line_dash='solid' if signal in {'BUY', 'SELL'} else 'dash',
                 annotation_text=signal,
                 annotation_position='top right',
                 opacity=0.75,
