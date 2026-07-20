@@ -34,6 +34,27 @@ for ticker in cfg['detail_order']:
     f = r['chart_frame']; fig = go.Figure()
     for col in ['Close','EMA5','EMA10','EMA15','EMA20','EMA50','Prior High']:
         if col in f: fig.add_trace(go.Scatter(x=f.index, y=f[col], name=col, mode='lines'))
+    event_colors = {
+        'BUY': '#2e7d32', 'SELL': '#d32f2f',
+        'STRONG_SELL': '#b71c1c', 'VERY_STRONG_SELL': '#7f0000',
+        'SELL_CAUTION': '#f57c00', 'TURN_UP': '#1565c0',
+        'TURN_DOWN': '#6a1b9a',
+    }
+    chart_start = f.index.min()
+    chart_end = f.index.max()
+    for event in r['events']:
+        event_date = event['date']
+        if chart_start <= event_date <= chart_end:
+            signal = event['signal']
+            fig.add_vline(
+                x=event_date,
+                line_color=event_colors.get(signal, '#757575'),
+                line_width=1,
+                line_dash='dash',
+                annotation_text=signal,
+                annotation_position='top right',
+                opacity=0.75,
+            )
     fig.update_layout(height=420, hovermode='x unified', margin=dict(l=10,r=10,t=20,b=10))
     st.plotly_chart(fig, use_container_width=True)
     st.dataframe(r['events'], use_container_width=True, hide_index=True)

@@ -12,11 +12,15 @@ def analyze(frame, instrument, cfg):
     turn_list, events = turns(trends.tolist()), []
     for i in range(1, len(x)):
         prev, cur = x.iloc[i-1], x.iloc[i]
-        for p in (10, 15, 20):
-            a, b = prev.EMA5-prev[f'EMA{p}'], cur.EMA5-cur[f'EMA{p}']
-            if (a <= 0 < b) or (a >= 0 > b):
-                buy = b > 0
-                events.append({'date': x.index[i], 'event_type': 'EMA_CROSS', 'signal': ('BUY' if p == 10 else 'STRONG_BUY' if p == 15 else 'VERY_STRONG_BUY') if buy else ('SELL' if p == 10 else 'STRONG_SELL' if p == 15 else 'VERY_STRONG_SELL'), 'cross_basis': f'EMA5/EMA{p}', 'close': cur.Close})
+        # Sell signals use EMA5 relationships; BUY is the EMA10/EMA20
+        # bullish crossover requested by the dashboard rules.
+        sell_rules = ((10, 'SELL'), (20, 'STRONG_SELL'), (50, 'VERY_STRONG_SELL'))
+        for p, signal in sell_rules:
+            previous_gap, current_gap = prev.EMA5-prev[f'EMA{p}'], cur.EMA5-cur[f'EMA{p}']
+            if previous_gap >= 0 > current_gap:
+                events.append({'date': x.index[i], 'event_type': 'EMA_CROSS', 'signal': signal, 'cross_basis': f'EMA5/EMA{p}', 'close': cur.Close})
+        if prev.EMA10 <= prev.EMA20 < cur.EMA10:
+            events.append({'date': x.index[i], 'event_type': 'EMA_CROSS', 'signal': 'BUY', 'cross_basis': 'EMA10/EMA20', 'close': cur.Close})
         if turn_list[i]: events.append({'date': x.index[i], 'event_type': 'EMA50_TURN', 'signal': turn_list[i], 'close': cur.Close})
         threshold = cfg['drawdown_caution']['threshold_percent']
         if cur['Drawdown %'] <= threshold < prev['Drawdown %']: events.append({'date': x.index[i], 'event_type': 'DRAWDOWN_CAUTION', 'signal': 'SELL_CAUTION', 'drawdown': cur['Drawdown %'], 'close': cur.Close})
