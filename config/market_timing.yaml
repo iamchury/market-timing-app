@@ -2,63 +2,26 @@ application:
   title: Market Timing
   page_icon: "📈"
   layout: wide
-
 data:
   history_period: 2y
   chart_trading_days: 100
   auto_adjust: false
   cache_ttl_seconds: 3600
-
 indicators:
-  ema_periods:
-    - 5
-    - 10
-    - 15
-    - 20
-    - 50
+  ema_periods: [5, 10, 15, 20, 50]
   ema_adjust: false
-  ema_min_periods: true
   equality_tolerance: 1.0e-8
-
 drawdown_caution:
   enabled: true
   threshold_percent: -10.0
   rolling_high_window: 252
-
 buy_filter:
   require_below_ema50: true
-
 instruments:
-  - ticker: QQQ
-    display_name: QQQ
-    currency: USD
-
-  - ticker: SOXX
-    display_name: SOXX
-    currency: USD
-
-  - ticker: MU
-    display_name: Micron
-    currency: USD
-
-  - ticker: 005930.KS
-    display_name: Samsung Electronics
-    currency: KRW
-
-  - ticker: 000660.KS
-    display_name: SK hynix
-    currency: KRW
-
-summary_order:
-  - QQQ
-  - SOXX
-  - MU
-  - 005930.KS
-  - 000660.KS
-
-detail_order:
-  - SOXX
-  - QQQ
-  - MU
-  - 005930.KS
-  - 000660.KS
+  - {ticker: QQQ, display_name: QQQ, currency: USD}
+  - {ticker: SOXX, display_name: SOXX, currency: USD}
+  - {ticker: MU, display_name: Micron, currency: USD}
+  - {ticker: 005930.KS, display_name: Samsung Electronics, currency: KRW}
+  - {ticker: 000660.KS, display_name: SK hynix, currency: KRW}
+summary_order: [QQQ, SOXX, MU, 005930.KS, 000660.KS]
+detail_order: [SOXX, QQQ, MU, 005930.KS, 000660.KS]

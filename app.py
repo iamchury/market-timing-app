@@ -1,0 +1,32 @@
+import streamlit as st
+import plotly.graph_objects as go
+from market_timing.config import load_config
+from market_timing.data_provider import load_history
+from market_timing.analyzer import analyze
+from market_timing.formatting import format_price
+
+st.set_page_config(page_title='Market Timing', page_icon='📈', layout='wide')
+cfg = load_config()
+st.title('Market Timing')
+results = {}
+for ticker in cfg['summary_order']:
+    inst = cfg['instrument_map'][ticker]
+    try: results[ticker] = analyze(load_history(ticker, cfg['data']['history_period'], cfg['data']['auto_adjust']), inst, cfg)
+    except Exception as exc: results[ticker] = {'error': str(exc), 'display_name': inst.display_name, 'ticker': ticker, 'currency': inst.currency}
+st.subheader('Market Timing Summary')
+rows = []
+for ticker in cfg['summary_order']:
+    r = results[ticker]
+    rows.append({'Instrument': r['display_name'], 'Ticker': ticker, 'Latest Date': r.get('latest_date','Unavailable'), 'Latest Price': format_price(r['latest_price'],r['currency']) if 'latest_price' in r else 'Unavailable', 'EMA Trend Score': r.get('trend_score','—'), 'Classification': r.get('classification','Unavailable'), 'EMA50 Trend': r.get('ema50_trend','—'), 'Primary Signal': r.get('primary_signal','—'), 'Active Condition': ', '.join(r.get('active_conditions',[]))})
+st.dataframe(rows, use_container_width=True, hide_index=True)
+for ticker in cfg['detail_order']:
+    r = results[ticker]; st.divider(); st.header(f"{r['display_name']} Market Timing")
+    if 'error' in r: st.warning(f"{ticker} unavailable: {r['error']}"); continue
+    st.metric('Overall', r['classification'], r['primary_signal']); st.metric('EMA Trend Score', r['trend_score'])
+    st.write(r['rationale'])
+    f = r['chart_frame']; fig = go.Figure()
+    for col in ['Close','EMA5','EMA10','EMA15','EMA20','EMA50','Prior High']:
+        if col in f: fig.add_trace(go.Scatter(x=f.index, y=f[col], name=col, mode='lines'))
+    fig.update_layout(height=420, hovermode='x unified', margin=dict(l=10,r=10,t=20,b=10))
+    st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(r['events'], use_container_width=True, hide_index=True)
