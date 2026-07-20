@@ -32,8 +32,10 @@ for ticker in cfg['detail_order']:
     st.metric('Overall', r['classification'], r['primary_signal']); st.metric('EMA Trend Score', r['trend_score'])
     st.write(r['rationale'])
     f = r['chart_frame']; fig = go.Figure()
-    for col in ['Close','EMA5','EMA10','EMA15','EMA20','EMA50','Prior High']:
-        if col in f: fig.add_trace(go.Scatter(x=f.index, y=f[col], name=col, mode='lines'))
+    line_widths = {'EMA5': 3, 'EMA10': 3, 'EMA20': 3}
+    for col in ['Close','EMA5','EMA10','EMA20','EMA50','Prior High']:
+        if col in f:
+            fig.add_trace(go.Scatter(x=f.index, y=f[col], name=col, mode='lines', line={'width': line_widths.get(col, 1.5)}))
     event_colors = {
         'BUY': '#2e7d32', 'SELL': '#d32f2f',
         'STRONG_SELL': '#b71c1c', 'VERY_STRONG_SELL': '#7f0000',
