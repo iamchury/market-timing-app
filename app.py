@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# Streamlit Community Cloud runs app.py from the repository root and does not
+# automatically add a src-layout package to sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+
 import streamlit as st
 import plotly.graph_objects as go
 from market_timing.config import load_config
