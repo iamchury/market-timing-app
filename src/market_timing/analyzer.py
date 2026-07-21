@@ -15,10 +15,11 @@ def analyze(frame, instrument, cfg):
         # SELL: EMA5 crosses below EMA10.
         if prev.EMA5 >= prev.EMA10 > cur.EMA5:
             events.append({'date': x.index[i], 'event_type': 'SELL', 'signal': 'SELL', 'cross_basis': 'EMA5/EMA10', 'close': cur.Close})
-        # BUY: EMA10 crosses above EMA20. The previous EMA10 must be at or
-        # below EMA20, while the current EMA10 must be strictly above it.
-        if prev.EMA10 <= prev.EMA20 and cur.EMA10 > cur.EMA20:
-            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA10/EMA20', 'close': cur.Close})
+        # BUY: EMA5 crosses above EMA10, the close is above EMA20, and EMA20
+        # is rising versus the previous trading session.
+        ema5_crosses_up = prev.EMA5 <= prev.EMA10 and cur.EMA5 > cur.EMA10
+        if ema5_crosses_up and cur.Close > cur.EMA20 and cur.EMA20 > prev.EMA20:
+            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA5/EMA10 + Close>EMA20 + EMA20 rising', 'close': cur.Close})
         if turn_list[i]: events.append({'date': x.index[i], 'event_type': 'EMA50_TURN', 'signal': turn_list[i], 'close': cur.Close})
         threshold = cfg['drawdown_caution']['threshold_percent']
         if cur['Drawdown %'] <= threshold < prev['Drawdown %']: events.append({'date': x.index[i], 'event_type': 'DRAWDOWN_CAUTION', 'signal': 'SELL_CAUTION', 'drawdown': cur['Drawdown %'], 'close': cur.Close})
