@@ -16,11 +16,9 @@ def analyze(frame, instrument, cfg):
         prev, cur = x.iloc[i-1], x.iloc[i]
         sell_condition = all(trends[p].iloc[i] == 'FALLING' for p in (10, 20, 30))
         buy_condition = all(trends[p].iloc[i] == 'RISING' for p in (10, 20, 30))
-        was_sell = all(trends[p].iloc[i-1] == 'FALLING' for p in (10, 20, 30))
-        was_buy = all(trends[p].iloc[i-1] == 'RISING' for p in (10, 20, 30))
-        if sell_condition and not was_sell:
+        if sell_condition and turn_list[i] == 'TURN_DOWN':
             events.append({'date': x.index[i], 'event_type': 'SELL', 'signal': 'SELL', 'cross_basis': 'EMA10/EMA20/EMA30 slopes falling', 'close': cur.Close})
-        if buy_condition and not was_buy:
+        if buy_condition and turn_list[i] == 'TURN_UP':
             events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA10/EMA20/EMA30 slopes rising', 'close': cur.Close})
         # EMA30/EMA50 trend crosses.
         if prev.EMA30 <= prev.EMA50 and cur.EMA30 > cur.EMA50:
