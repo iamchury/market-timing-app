@@ -18,8 +18,8 @@ def analyze(frame, instrument, cfg):
         buy_condition = all(trends[p].iloc[i] == 'RISING' for p in (10, 20, 30))
         if sell_condition and turn_list[i] == 'TURN_DOWN':
             events.append({'date': x.index[i], 'event_type': 'SELL', 'signal': 'SELL', 'cross_basis': 'EMA10/EMA20/EMA30 slopes falling', 'close': cur.Close})
-        if buy_condition and turn_list[i] == 'TURN_UP' and cur.EMA5 > cur.EMA20:
-            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA10/EMA20/EMA30 slopes rising + EMA5>EMA20', 'close': cur.Close})
+        if buy_condition and turn_list[i] == 'TURN_UP' and cur.EMA5 > cur.EMA10:
+            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA10/EMA20/EMA30 slopes rising + EMA5>EMA10', 'close': cur.Close})
         # EMA30/EMA50 trend crosses.
         if prev.EMA30 <= prev.EMA50 and cur.EMA30 > cur.EMA50:
             events.append({'date': x.index[i], 'event_type': 'GOLDEN_CROSS', 'signal': 'GOLDEN_CROSS', 'cross_basis': 'EMA30/EMA50', 'close': cur.Close})
