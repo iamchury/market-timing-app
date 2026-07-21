@@ -20,6 +20,11 @@ def analyze(frame, instrument, cfg):
         ema5_crosses_up = prev.EMA5 <= prev.EMA10 and cur.EMA5 > cur.EMA10
         if ema5_crosses_up and cur.Close > cur.EMA20 and cur.EMA20 > prev.EMA20:
             events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA5/EMA10 + Close>EMA20 + EMA20 rising', 'close': cur.Close})
+        # EMA30/EMA50 trend crosses.
+        if prev.EMA30 <= prev.EMA50 and cur.EMA30 > cur.EMA50:
+            events.append({'date': x.index[i], 'event_type': 'GOLDEN_CROSS', 'signal': 'GOLDEN_CROSS', 'cross_basis': 'EMA30/EMA50', 'close': cur.Close})
+        if prev.EMA30 >= prev.EMA50 and cur.EMA30 < cur.EMA50:
+            events.append({'date': x.index[i], 'event_type': 'DEAD_CROSS', 'signal': 'DEAD_CROSS', 'cross_basis': 'EMA30/EMA50', 'close': cur.Close})
         if turn_list[i]: events.append({'date': x.index[i], 'event_type': 'EMA50_TURN', 'signal': turn_list[i], 'close': cur.Close})
         threshold = cfg['drawdown_caution']['threshold_percent']
         if cur['Drawdown %'] <= threshold < prev['Drawdown %']: events.append({'date': x.index[i], 'event_type': 'DRAWDOWN_CAUTION', 'signal': 'SELL_CAUTION', 'drawdown': cur['Drawdown %'], 'close': cur.Close})

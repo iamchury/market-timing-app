@@ -33,11 +33,12 @@ for ticker in cfg['detail_order']:
     st.write(r['rationale'])
     f = r['chart_frame']; fig = go.Figure()
     line_widths = {'EMA5': 3, 'EMA10': 3, 'EMA20': 3}
-    for col in ['Close','EMA5','EMA10','EMA20','EMA50','Prior High']:
+    for col in ['Close','EMA5','EMA10','EMA20','EMA30','EMA50','Prior High']:
         if col in f:
             fig.add_trace(go.Scatter(x=f.index, y=f[col], name=col, mode='lines', line={'width': line_widths.get(col, 1.5)}))
     event_colors = {
         'BUY': '#2e7d32', 'SELL': '#d32f2f',
+        'GOLDEN_CROSS': '#00a86b', 'DEAD_CROSS': '#e53935',
         'STRONG_SELL': '#b71c1c', 'VERY_STRONG_SELL': '#7f0000',
         'SELL_CAUTION': '#f57c00', 'TURN_UP': '#1565c0',
         'TURN_DOWN': '#6a1b9a',

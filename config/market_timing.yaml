@@ -8,7 +8,7 @@ data:
   auto_adjust: false
   cache_ttl_seconds: 3600
 indicators:
-  ema_periods: [5, 10, 15, 20, 50]
+  ema_periods: [5, 10, 15, 20, 30, 50]
   ema_adjust: false
   equality_tolerance: 1.0e-8
 drawdown_caution:
