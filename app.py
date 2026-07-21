@@ -77,6 +77,29 @@ for ticker in cfg['detail_order']:
                 annotation_position='top right',
                 opacity=0.75,
             )
+    # Always mark the most recent trading day, even when no trade event was
+    # generated for it. Use the requested trade-event styling for this marker.
+    latest_events = [event for event in r['events']
+                     if event['date'].date() == chart_end.date()]
+    latest_signal = next(
+        (event['signal'] for event in latest_events
+         if event['signal'] in {'BUY', 'SELL', 'SELL_CAUTION'}),
+        None,
+    )
+    latest_color = {
+        'BUY': '#2e7d32',
+        'SELL': '#d32f2f',
+        'SELL_CAUTION': '#d32f2f',
+    }.get(latest_signal, '#9e9e9e')
+    fig.add_vline(
+        x=chart_end,
+        line_color=latest_color,
+        line_width=3 if latest_signal in {'BUY', 'SELL'} else 2,
+        line_dash='dot' if latest_signal in {None, 'SELL_CAUTION'} else 'solid',
+        annotation_text=latest_signal or 'Latest day',
+        annotation_position='top right',
+        opacity=0.85,
+    )
     fig.update_layout(height=420, hovermode='x unified', margin=dict(l=10,r=10,t=20,b=10))
     st.plotly_chart(fig, use_container_width=True, config={'responsive': True, 'displaylogo': False})
     st.dataframe(r['events'], use_container_width=True, hide_index=True)
