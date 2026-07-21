@@ -27,6 +27,6 @@ instruments:
   - {ticker: AMZN, display_name: Amazon, currency: USD}
   - {ticker: TSLA, display_name: Tesla, currency: USD}
   - {ticker: NVDA, display_name: Nvidia, currency: USD}
-  - {ticker: AVGO, display_name: AVGO, currency: USD}
+  - {ticker: AVGO, display_name: Broadcom, currency: USD}
 summary_order: [QQQ, SOXX, MU, 005930.KS, 000660.KS, GOOGL, AMZN, TSLA, NVDA, AVGO]
 detail_order: [SOXX, QQQ, MU, 005930.KS, 000660.KS, GOOGL, AMZN, TSLA, NVDA, AVGO]
