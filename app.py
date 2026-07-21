@@ -43,7 +43,7 @@ st.subheader('Market Timing Summary')
 rows = []
 for ticker in cfg['summary_order']:
     r = results[ticker]
-    rows.append({'Instrument': r['display_name'], 'Ticker': ticker, 'Latest Date': r.get('latest_date','Unavailable'), 'Latest Price': format_price(r['latest_price'],r['currency']) if 'latest_price' in r else 'Unavailable', 'EMA Trend Score': r.get('trend_score','—'), 'Classification': r.get('classification','Unavailable'), 'EMA50 Trend': r.get('ema50_trend','—'), 'Primary Signal': r.get('primary_signal','—'), 'Active Condition': ', '.join(r.get('active_conditions',[]))})
+    rows.append({'Instrument': r['display_name'], 'Ticker': ticker, 'Latest Date': r.get('latest_date','Unavailable'), 'Latest Price': format_price(r['latest_price'],r['currency']) if 'latest_price' in r else 'Unavailable', 'EMA Trend Score': r.get('trend_score','—'), 'EMA Alignment Score': r.get('alignment_score','—'), 'EMA Order': r.get('ema_order','—'), 'Classification': r.get('classification','Unavailable'), 'EMA50 Trend': r.get('ema50_trend','—'), 'Primary Signal': r.get('primary_signal','—'), 'Active Condition': ', '.join(r.get('active_conditions',[]))})
 st.dataframe(rows, use_container_width=True, hide_index=True)
 for ticker in cfg['detail_order']:
     r = results[ticker]; st.divider(); st.header(f"{r['display_name']} Market Timing")

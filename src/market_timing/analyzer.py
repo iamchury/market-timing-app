@@ -1,6 +1,6 @@
 from .indicators import add_emas, prior_high
 from .ema_trend import trend_from_slope, turns
-from .signals import trend_score, classification
+from .signals import trend_score, classification, ema_alignment
 
 def analyze(frame, instrument, cfg):
     close = frame['Close'].dropna().sort_index()
@@ -8,6 +8,7 @@ def analyze(frame, instrument, cfg):
     x['Prior High'] = prior_high(close, cfg['drawdown_caution']['rolling_high_window'])
     x['Drawdown %'] = (x.Close / x['Prior High'] - 1) * 100
     x = x.dropna(subset=['EMA50'])
+    x = x.join(x.apply(ema_alignment, axis=1, result_type='expand'))
     tolerance = cfg['indicators']['equality_tolerance']
     slope_periods = (5, 10, 15, 20, 30, 50)
     slopes = {period: x[f'EMA{period}'].diff() for period in slope_periods}
@@ -34,4 +35,4 @@ def analyze(frame, instrument, cfg):
     chart_start = chart_frame.index.min()
     events = [event for event in events if event['date'] >= chart_start]
     row, score = x.iloc[-1], trend_score(x.iloc[-1], {p: trends[p].iloc[-1] for p in slope_periods}, tolerance)
-    return {'ticker': instrument.ticker, 'display_name': instrument.display_name, 'currency': instrument.currency, 'latest_date': x.index[-1], 'latest_price': float(row.Close), 'ema_values': {f'EMA{p}': float(row[f'EMA{p}']) for p in cfg['indicators']['ema_periods']}, 'ema50_trend': trends[50].iloc[-1], 'ema30_trend': trends[30].iloc[-1], 'ema50_slope': float(slopes[50].iloc[-1]), 'latest_ema30_turn': turn_list[-1], 'trend_score': score, 'classification': classification(score), 'rationale': f'EMA30 is {trends[30].iloc[-1].lower()} with score {score}.', 'primary_signal': events[-1]['signal'] if events else 'HOLD', 'active_conditions': ['DRAWDOWN_CAUTION'] if row['Drawdown %'] <= threshold else [], 'events': events, 'chart_frame': chart_frame}
+    return {'ticker': instrument.ticker, 'display_name': instrument.display_name, 'currency': instrument.currency, 'latest_date': x.index[-1], 'latest_price': float(row.Close), 'ema_values': {f'EMA{p}': float(row[f'EMA{p}']) for p in cfg['indicators']['ema_periods']}, 'ema50_trend': trends[50].iloc[-1], 'ema30_trend': trends[30].iloc[-1], 'ema50_slope': float(slopes[50].iloc[-1]), 'latest_ema30_turn': turn_list[-1], 'trend_score': score, 'alignment_score': int(row.alignment_score), 'alignment_inversions': int(row.inversion_count), 'ema_order': row.ema_order, 'classification': classification(score), 'rationale': f'EMA30 is {trends[30].iloc[-1].lower()} with score {score}.', 'primary_signal': events[-1]['signal'] if events else 'HOLD', 'active_conditions': ['DRAWDOWN_CAUTION'] if row['Drawdown %'] <= threshold else [], 'events': events, 'chart_frame': chart_frame}

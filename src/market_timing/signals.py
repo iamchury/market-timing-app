@@ -1,4 +1,12 @@
 def _cmp(a, b, tolerance=1e-8): return 0 if abs(a-b) <= tolerance else (1 if a > b else -1)
+
+EMA_ALIGNMENT_PERIODS = (5, 10, 20, 30, 50)
+
+def ema_alignment(row):
+    periods = EMA_ALIGNMENT_PERIODS
+    inversions = sum(row[f'EMA{left}'] <= row[f'EMA{right}'] for i, left in enumerate(periods) for right in periods[i + 1:])
+    order = ' > '.join(f'EMA{p}' for p in sorted(periods, key=lambda p: row[f'EMA{p}'], reverse=True))
+    return {'inversion_count': int(inversions), 'alignment_score': 10 - 2 * inversions, 'ema_order': order}
 def trend_score(row, trends=None, tolerance=1e-8):
     periods = (5, 10, 15, 20, 30, 50)
     rising = trends and all(trends.get(period) == 'RISING' for period in periods)
