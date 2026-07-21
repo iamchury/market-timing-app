@@ -9,8 +9,9 @@ def analyze(frame, instrument, cfg):
     x['Drawdown %'] = (x.Close / x['Prior High'] - 1) * 100
     x = x.dropna(subset=['EMA50'])
     tolerance = cfg['indicators']['equality_tolerance']
-    slopes = {period: x[f'EMA{period}'].diff() for period in (10, 20, 30, 50)}
-    trends = {period: slopes[period].map(lambda v: trend_from_slope(v, tolerance)) for period in (10, 20, 30, 50)}
+    slope_periods = (5, 10, 15, 20, 30, 50)
+    slopes = {period: x[f'EMA{period}'].diff() for period in slope_periods}
+    trends = {period: slopes[period].map(lambda v: trend_from_slope(v, tolerance)) for period in slope_periods}
     buy_turn_period = 50 if instrument.ticker == 'QQQ' else 30
     turn_list, events = turns(trends[buy_turn_period].tolist()), []
     for i in range(1, len(x)):
@@ -32,5 +33,5 @@ def analyze(frame, instrument, cfg):
     chart_frame = x.tail(cfg['data']['chart_trading_days'])
     chart_start = chart_frame.index.min()
     events = [event for event in events if event['date'] >= chart_start]
-    row, score = x.iloc[-1], trend_score(x.iloc[-1], trends[50].iloc[-1], tolerance)
+    row, score = x.iloc[-1], trend_score(x.iloc[-1], {p: trends[p].iloc[-1] for p in slope_periods}, tolerance)
     return {'ticker': instrument.ticker, 'display_name': instrument.display_name, 'currency': instrument.currency, 'latest_date': x.index[-1], 'latest_price': float(row.Close), 'ema_values': {f'EMA{p}': float(row[f'EMA{p}']) for p in cfg['indicators']['ema_periods']}, 'ema50_trend': trends[50].iloc[-1], 'ema30_trend': trends[30].iloc[-1], 'ema50_slope': float(slopes[50].iloc[-1]), 'latest_ema30_turn': turn_list[-1], 'trend_score': score, 'classification': classification(score), 'rationale': f'EMA30 is {trends[30].iloc[-1].lower()} with score {score}.', 'primary_signal': events[-1]['signal'] if events else 'HOLD', 'active_conditions': ['DRAWDOWN_CAUTION'] if row['Drawdown %'] <= threshold else [], 'events': events, 'chart_frame': chart_frame}
