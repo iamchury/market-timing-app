@@ -11,21 +11,22 @@ def analyze(frame, instrument, cfg):
     tolerance = cfg['indicators']['equality_tolerance']
     slopes = {period: x[f'EMA{period}'].diff() for period in (10, 20, 30, 50)}
     trends = {period: slopes[period].map(lambda v: trend_from_slope(v, tolerance)) for period in (10, 20, 30, 50)}
-    turn_list, events = turns(trends[30].tolist()), []
+    buy_turn_period = 50 if instrument.ticker == 'QQQ' else 30
+    turn_list, events = turns(trends[buy_turn_period].tolist()), []
     for i in range(1, len(x)):
         prev, cur = x.iloc[i-1], x.iloc[i]
         sell_condition = all(trends[p].iloc[i] == 'FALLING' for p in (10, 20, 30))
-        buy_condition = all(trends[p].iloc[i] == 'RISING' for p in (20, 30))
+        buy_condition = all(trends[p].iloc[i] == 'RISING' for p in (20, buy_turn_period))
         if sell_condition and turn_list[i] == 'TURN_DOWN':
             events.append({'date': x.index[i], 'event_type': 'SELL', 'signal': 'SELL', 'cross_basis': 'EMA10/EMA20/EMA30 slopes falling', 'close': cur.Close})
-        if buy_condition and turn_list[i] == 'TURN_UP' and cur.Close > cur.EMA20 * 1.005:
-            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': 'EMA20/EMA30 slopes rising + Close>EMA20*1.005', 'close': cur.Close})
+        if buy_condition and turn_list[i] == 'TURN_UP' and cur.Close > cur.EMA10:
+            events.append({'date': x.index[i], 'event_type': 'BUY', 'signal': 'BUY', 'cross_basis': f'EMA20/EMA{buy_turn_period} slopes rising + Close>EMA10', 'close': cur.Close})
         # EMA30/EMA50 trend crosses.
         if prev.EMA30 <= prev.EMA50 and cur.EMA30 > cur.EMA50:
             events.append({'date': x.index[i], 'event_type': 'GOLDEN_CROSS', 'signal': 'GOLDEN_CROSS', 'cross_basis': 'EMA30/EMA50', 'close': cur.Close})
         if prev.EMA30 >= prev.EMA50 and cur.EMA30 < cur.EMA50:
             events.append({'date': x.index[i], 'event_type': 'DEAD_CROSS', 'signal': 'DEAD_CROSS', 'cross_basis': 'EMA30/EMA50', 'close': cur.Close})
-        if turn_list[i]: events.append({'date': x.index[i], 'event_type': 'EMA30_TURN', 'signal': turn_list[i], 'close': cur.Close})
+        if turn_list[i]: events.append({'date': x.index[i], 'event_type': f'EMA{buy_turn_period}_TURN', 'signal': turn_list[i], 'close': cur.Close})
         threshold = cfg['drawdown_caution']['threshold_percent']
         if cur['Drawdown %'] <= threshold < prev['Drawdown %']: events.append({'date': x.index[i], 'event_type': 'DRAWDOWN_CAUTION', 'signal': 'SELL_CAUTION', 'drawdown': cur['Drawdown %'], 'close': cur.Close})
     chart_frame = x.tail(cfg['data']['chart_trading_days'])
