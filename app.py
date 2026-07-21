@@ -13,6 +13,25 @@ from market_timing.analyzer import analyze
 from market_timing.formatting import format_price
 
 st.set_page_config(page_title='Market Timing', page_icon='📈', layout='wide')
+st.markdown("""
+<style>
+/* Keep the wide desktop layout, but use the full viewport on phones. */
+@media (max-width: 768px) {
+    .block-container {
+        padding: 1rem 0.6rem 2rem;
+    }
+    h1 { font-size: 1.8rem !important; }
+    h2 { font-size: 1.35rem !important; }
+    h3 { font-size: 1.15rem !important; }
+    [data-testid="stDataFrame"] {
+        overflow-x: auto;
+    }
+    [data-testid="stPlotlyChart"] {
+        width: 100% !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 cfg = load_config()
 st.title('Market Timing')
 results = {}
@@ -59,5 +78,5 @@ for ticker in cfg['detail_order']:
                 opacity=0.75,
             )
     fig.update_layout(height=420, hovermode='x unified', margin=dict(l=10,r=10,t=20,b=10))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'responsive': True, 'displaylogo': False})
     st.dataframe(r['events'], use_container_width=True, hide_index=True)
