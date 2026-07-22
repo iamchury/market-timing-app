@@ -34,5 +34,8 @@ def analyze(frame, instrument, cfg):
     chart_frame = x.tail(cfg['data']['chart_trading_days'])
     chart_start = chart_frame.index.min()
     events = [event for event in events if event['date'] >= chart_start]
+    # On the same date, trade signals take precedence over informational turns.
+    signal_priority = {'BUY': 1, 'SELL': 1}
+    events.sort(key=lambda event: (event['date'], signal_priority.get(event['signal'], 0)))
     row, score = x.iloc[-1], trend_score(x.iloc[-1], {p: trends[p].iloc[-1] for p in slope_periods}, tolerance)
     return {'ticker': instrument.ticker, 'display_name': instrument.display_name, 'currency': instrument.currency, 'latest_date': x.index[-1], 'latest_price': float(row.Close), 'ema_values': {f'EMA{p}': float(row[f'EMA{p}']) for p in cfg['indicators']['ema_periods']}, 'ema50_trend': trends[50].iloc[-1], 'ema30_trend': trends[30].iloc[-1], 'ema50_slope': float(slopes[50].iloc[-1]), 'latest_ema30_turn': turn_list[-1], 'trend_score': score, 'alignment_score': int(row.alignment_score), 'alignment_inversions': int(row.inversion_count), 'ema_order': row.ema_order, 'classification': classification(score), 'rationale': f'EMA30 is {trends[30].iloc[-1].lower()} with score {score}.', 'primary_signal': events[-1]['signal'] if events else 'HOLD', 'active_conditions': ['DRAWDOWN_CAUTION'] if row['Drawdown %'] <= threshold else [], 'events': events, 'chart_frame': chart_frame}
