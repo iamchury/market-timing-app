@@ -1,4 +1,5 @@
 import sys
+import html
 from pathlib import Path
 
 # Streamlit Community Cloud runs app.py from the repository root and does not
@@ -30,6 +31,37 @@ st.markdown("""
         width: 100% !important;
     }
 }
+.summary-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+.summary-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+.summary-table th, .summary-table td {
+    padding: 0.5rem 0.55rem;
+    border-right: 1px solid #30333d;
+    border-bottom: 1px solid #30333d;
+    text-align: left;
+}
+.summary-table th {
+    background: #1b1e26;
+    color: #aeb4c0;
+    font-weight: 500;
+}
+.summary-table td:first-child, .summary-table th:first-child {
+    border-left: 1px solid #30333d;
+}
+.summary-table thead th:first-child { border-top-left-radius: 0.45rem; }
+.summary-table thead th:last-child { border-top-right-radius: 0.45rem; }
+.summary-table tbody tr:last-child td:first-child { border-bottom-left-radius: 0.45rem; }
+.summary-table tbody tr:last-child td:last-child { border-bottom-right-radius: 0.45rem; }
+.summary-table a { color: #d8e7ff; text-decoration: none; font-weight: 600; }
+.summary-table a:hover { text-decoration: underline; }
 </style>
 """, unsafe_allow_html=True)
 cfg = load_config()
@@ -44,9 +76,23 @@ rows = []
 for ticker in cfg['summary_order']:
     r = results[ticker]
     rows.append({'Instrument': r['display_name'], 'Primary Signal': r.get('primary_signal','—'), 'Latest Date': r.get('latest_date','Unavailable'), 'Latest Price': format_price(r['latest_price'],r['currency']) if 'latest_price' in r else 'Unavailable', 'EMA Trend Score': r.get('trend_score','—'), 'EMA Alignment Score': r.get('alignment_score','—'), 'EMA Order': r.get('ema_order','—'), 'Classification': r.get('classification','Unavailable'), 'EMA50 Trend': r.get('ema50_trend','—'), 'Active Condition': ', '.join(r.get('active_conditions',[]))})
-st.dataframe(rows, use_container_width=True, hide_index=True)
+summary_columns = list(rows[0].keys()) if rows else []
+summary_html = ['<div class="summary-table-wrap"><table class="summary-table"><thead><tr>']
+summary_html.append(''.join(f'<th>{html.escape(str(column))}</th>' for column in summary_columns))
+summary_html.append('</tr></thead><tbody>')
+for ticker, row in zip(cfg['summary_order'], rows):
+    anchor = f'{ticker.lower().replace(".", "-")}-market-timing'
+    summary_html.append('<tr>')
+    for column in summary_columns:
+        value = html.escape(str(row[column]))
+        if column == 'Instrument':
+            value = f'<a href="#{anchor}">{value}</a>'
+        summary_html.append(f'<td>{value}</td>')
+    summary_html.append('</tr>')
+summary_html.append('</tbody></table></div>')
+st.markdown(''.join(summary_html), unsafe_allow_html=True)
 for ticker in cfg['detail_order']:
-    r = results[ticker]; st.divider(); st.header(f"{r['display_name']} Market Timing")
+    r = results[ticker]; st.divider(); st.header(f"{r['display_name']} Market Timing", anchor=f'{ticker.lower().replace(".", "-")}-market-timing')
     if 'error' in r: st.warning(f"{ticker} unavailable: {r['error']}"); continue
     st.metric('Overall', r['classification'], r['primary_signal']); st.metric('EMA Trend Score', r['trend_score'])
     st.write(r['rationale'])
