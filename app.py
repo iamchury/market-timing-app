@@ -81,6 +81,8 @@ summary_html = ['<div class="summary-table-wrap"><table class="summary-table"><t
 summary_html.append(''.join(f'<th>{html.escape(str(column))}</th>' for column in summary_columns))
 summary_html.append('</tr></thead><tbody>')
 signal_colors = {
+    'BUY': '#2eaf67',
+    'SELL': '#e05252',
     'TURN_UP': '#2eaf67',
     'TURN_DOWN': '#e05252',
     'SELL_CAUTION': '#f28ab2',
