@@ -158,4 +158,4 @@ for ticker in cfg['detail_order']:
     )
     fig.update_layout(height=420, hovermode='x unified', margin=dict(l=10,r=10,t=20,b=10))
     st.plotly_chart(fig, use_container_width=True, config={'responsive': True, 'displaylogo': False})
-    st.dataframe(r['events'], use_container_width=True, hide_index=True)
+    st.dataframe(list(reversed(r['events'])), use_container_width=True, hide_index=True)
