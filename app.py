@@ -80,6 +80,13 @@ summary_columns = list(rows[0].keys()) if rows else []
 summary_html = ['<div class="summary-table-wrap"><table class="summary-table"><thead><tr>']
 summary_html.append(''.join(f'<th>{html.escape(str(column))}</th>' for column in summary_columns))
 summary_html.append('</tr></thead><tbody>')
+signal_colors = {
+    'TURN_UP': '#2eaf67',
+    'TURN_DOWN': '#e05252',
+    'SELL_CAUTION': '#f28ab2',
+    'DEAD_CROSS': '#aeb4c0',
+    'GOLDEN_CROSS': '#e5b94c',
+}
 for ticker, row in zip(cfg['summary_order'], rows):
     anchor = f'{ticker.lower().replace(".", "-")}-market-timing'
     summary_html.append('<tr>')
@@ -87,6 +94,9 @@ for ticker, row in zip(cfg['summary_order'], rows):
         value = html.escape(str(row[column]))
         if column == 'Instrument':
             value = f'<a href="#{anchor}">{value}</a>'
+        elif column == 'Primary Signal':
+            color = signal_colors.get(str(row[column]), '#d8dde7')
+            value = f'<span style="color:{color};font-weight:600">{value}</span>'
         summary_html.append(f'<td>{value}</td>')
     summary_html.append('</tr>')
 summary_html.append('</tbody></table></div>')
